@@ -92,6 +92,7 @@ input:focus{outline:none;border-color:var(--gold);}
 <div class="mode-tabs" id="modeTabs">
   <button class="mode-tab active" data-mode="casino">🍽 RESTAURANTE</button>
   <button class="mode-tab" data-mode="super">🛒 SUPERMERCADO</button>
+  <button class="mode-tab" data-mode="tienda">🏪 TIENDA</button>
 </div>
 
 <!-- MODO RESTAURANTE -->
@@ -201,6 +202,54 @@ input:focus{outline:none;border-color:var(--gold);}
   <div class="actions"><button class="btn-dl" id="s_btnDl">DESCARGAR .PY</button><button class="btn-print" id="s_btnPrint">IMPRIMIR TICKET</button></div>
 </div>
 
+<!-- MODO TIENDA Y ABARROTES -->
+<div class="layout section-hidden" id="tiendaMode">
+  <div class="card">
+    <div class="card-title">PROPIETARIO Y NEGOCIO</div>
+    <div class="grid-2">
+      <div class="field full"><label>PROPIETARIO</label><input id="t_propietario" value="LORENZO SERRANO ALONSO"/></div>
+      <div class="field full"><label>NOMBRE COMERCIAL</label><input id="t_nombre" value="CREM. Y SALCHICHONERIA LOS CHINOS"/></div>
+      <div class="field full"><label>DIRECCION LINEA 1</label><input id="t_direccion1" value="PLAN DE SAN LUIS #1 TEL.56412086"/></div>
+      <div class="field full"><label>DIRECCION LINEA 2</label><input id="t_direccion2" value="SAN LORENZO LA CEBADA,CP.16035"/></div>
+      <div class="field full"><label>UBICACION Y RFC</label><input id="t_ubicacion_rfc" value="XOCHIMILCO,CDMX RFC. SEAL700810D38"/></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">DATOS DE VENTA</div>
+    <div class="grid-2">
+      <div class="field"><label>FECHA</label><input id="t_fecha" type="date"/></div>
+      <div class="field"><label>HORA</label><input id="t_hora" type="time"/></div>
+      <div class="field full"><label>CAJERO</label><input id="t_cajero" value="VALERIA"/></div>
+      <div class="field"><label>TURNO #</label><input id="t_turno" value="9078"/></div>
+      <div class="field"><label>FOLIO</label><input id="t_folio" value="613557"/></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">PRODUCTOS</div>
+    <div class="cols-label casino-cols"><span>CANT</span><span>DESCRIPCION</span><span>IMPORTE</span><span></span></div>
+    <div class="productos-list" id="t_productosList"></div>
+    <button class="btn-add" id="t_btnAdd">+ AGREGAR PRODUCTO</button>
+  </div>
+  <div class="card">
+    <div class="card-title">TOTALES</div>
+    <div class="grid-2">
+      <div class="field"><label>TOTAL ARTICULOS</label><input id="t_totalArts" value="3"/></div>
+      <div class="field"><label>TOTAL</label><input id="t_total" value="$52.00"/></div>
+      <div class="field"><label>PAGO CON</label><input id="t_recibido" value="$52.00"/></div>
+      <div class="field"><label>CAMBIO</label><input id="t_cambio" value="$0.00"/></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">PIE / REGIMEN</div>
+    <div class="grid-2">
+      <div class="field full"><label>REGIMEN</label><input id="t_regimen" value="REGIMEN DE INCORPORACION FISCAL"/></div>
+      <div class="field full"><label>SITIO WEB</label><input id="t_web" value="WWW.ELEVENTA.COM"/></div>
+    </div>
+  </div>
+  <div class="ticket-preview" id="t_ticketPreview"></div>
+  <div class="actions"><button class="btn-dl" id="t_btnDl">DESCARGAR .PY</button><button class="btn-print" id="t_btnPrint">IMPRIMIR TICKET</button></div>
+</div>
+
 <script>
 (function(){
 'use strict';
@@ -217,8 +266,10 @@ var LOGOS = {
 // CONSTANTES
 var W_CASINO = 32;
 var W_SUPER = 32;
+var W_TIENDA = 32;
 var SEP32 = '================================';
 var SEP42 = '================================';
+var SEP_TIENDA = '--------------------------------';
 
 // NORMALIZACIÓN
 var LATIN_MAP = {
@@ -243,6 +294,14 @@ function center(s, W){
   s = normalize(s).slice(0, W);
   var spaces = Math.floor((W - s.length) / 2);
   return ' '.repeat(spaces) + s + ' '.repeat(W - s.length - spaces);
+}
+
+function padLR(left, right, W){
+  left = normalize(left);
+  right = normalize(right);
+  var spaces = W - left.length - right.length;
+  if(spaces < 1) spaces = 1;
+  return left + ' '.repeat(spaces) + right;
 }
 
 function esc(s){
@@ -318,12 +377,18 @@ document.querySelectorAll('.mode-tab').forEach(function(tab){
     this.classList.add('active');
     var cmode = document.getElementById('casinoMode');
     var smode = document.getElementById('superMode');
+    var tmode = document.getElementById('tiendaMode');
+    
+    cmode.classList.add('section-hidden');
+    smode.classList.add('section-hidden');
+    tmode.classList.add('section-hidden');
+    
     if(currentMode === 'casino'){
       cmode.classList.remove('section-hidden');
-      smode.classList.add('section-hidden');
-    } else {
+    } else if(currentMode === 'super'){
       smode.classList.remove('section-hidden');
-      cmode.classList.add('section-hidden');
+    } else if(currentMode === 'tienda'){
+      tmode.classList.remove('section-hidden');
     }
   });
 });
@@ -691,6 +756,129 @@ document.getElementById('s_btnPrint').addEventListener('click', function(){
   setTimeout(function(){ w.print(); }, 500);
 });
 
+// MODO TIENDA
+document.getElementById('t_fecha').value = now.toISOString().split('T')[0];
+document.getElementById('t_hora').value = now.toTimeString().slice(0,5);
+
+function t_addRow(c, d, p){
+  c = c || '1';
+  d = normalize(d || '').toUpperCase();
+  p = p || '';
+  var list = document.getElementById('t_productosList');
+  var row = mk('div');
+  row.className = 'producto-row';
+  var i0 = mk(); i0.value = c; i0.placeholder = '1';
+  var i1 = mk(); i1.value = d; i1.placeholder = 'DESCRIPCION';
+  var i2 = mk(); i2.value = p; i2.placeholder = '$0.00';
+  var btn = mk('button'); btn.className = 'btn-remove'; btn.innerHTML = '&times;';
+  btn.addEventListener('click', function(){ row.remove(); t_refresh(); });
+  [i0, i1, i2].forEach(function(el){ upInput(el, t_refresh); });
+  [i0, i1, i2, btn].forEach(function(el){ row.appendChild(el); });
+  list.appendChild(row);
+  t_refresh();
+}
+
+function t_getRows(){
+  return Array.from(document.querySelectorAll('#t_productosList .producto-row')).map(function(r){
+    var ii = r.querySelectorAll('input');
+    return {
+      c: normalize(ii[0].value).toUpperCase(),
+      d: normalize(ii[1].value).toUpperCase(),
+      p: normalize(ii[2].value).toUpperCase()
+    };
+  });
+}
+
+document.getElementById('t_btnAdd').addEventListener('click', function(){ t_addRow(); });
+
+document.querySelectorAll('#tiendaMode input').forEach(function(el){ upInput(el, t_refresh); });
+
+function t_buildLines(){
+  var W = W_TIENDA;
+  var rows = t_getRows();
+  var L = [];
+  var fecha = fmtDate(gvRaw('t_fecha'));
+  var hora = fmtTime(gvRaw('t_hora'));
+
+  L.push({t: 'c', txt: gv('t_propietario'), bold: true});
+  if(gv('t_nombre')) L.push({t: 'c', txt: gv('t_nombre')});
+  if(gv('t_direccion1')) L.push({t: 'c', txt: gv('t_direccion1')});
+  if(gv('t_direccion2')) L.push({t: 'c', txt: gv('t_direccion2')});
+  if(gv('t_ubicacion_rfc')) L.push({t: 'c', txt: gv('t_ubicacion_rfc')});
+  L.push({t: 'l', txt: ''});
+  L.push({t: 'c', txt: fecha + ' ' + hora});
+  L.push({t: 'l', txt: ''});
+  
+  L.push({t: 'l', txt: padLR('CAJERO:', gv('t_cajero'), W)});
+  L.push({t: 'l', txt: padLR('TURNO #', gv('t_turno'), W)});
+  L.push({t: 'l', txt: padLR('FOLIO:', gv('t_folio'), W)});
+  L.push({t: 'l', txt: ''});
+  
+  L.push({t: 'l', txt: 'CANT. DESCRIPCION        IMPORTE'});
+  L.push({t: 'sep'});
+  
+  rows.forEach(function(r){
+    var cant = r.c;
+    var desc = r.d;
+    var imp = r.p;
+    var cantStr = pad(cant, 2, true);
+    var descStr = pad(desc, 20, true);
+    var impStr = pad(imp, 7, false);
+    L.push({t: 'l', txt: cantStr + '  ' + descStr + ' ' + impStr});
+  });
+  
+  L.push({t: 'sep'});
+  L.push({t: 'l', txt: 'NO. DE ARTICULOS: ' + gv('t_totalArts')});
+  
+  L.push({t: 'l', txt: pad(normalize('TOTAL:'), 18, false) + ' ' + pad(gv('t_total'), 13, true)});
+  L.push({t: 'l', txt: pad(normalize('PAGO CON:'), 18, false) + ' ' + pad(gv('t_recibido'), 13, true)});
+  L.push({t: 'l', txt: pad(normalize('SU CAMBIO:'), 18, false) + ' ' + pad(gv('t_cambio'), 13, true)});
+  L.push({t: 'l', txt: ''});
+  
+  if(gv('t_regimen')) L.push({t: 'c', txt: gv('t_regimen')});
+  if(gv('t_web')) L.push({t: 'c', txt: gv('t_web')});
+  
+  return L;
+}
+
+function t_refresh(){
+  document.getElementById('t_ticketPreview').innerHTML = renderHTML(t_buildLines(), W_TIENDA, SEP_TIENDA);
+}
+
+document.getElementById('t_btnDl').addEventListener('click', function(){
+  var py = "# -*- coding: utf-8 -*-\nfrom escpos.printer import Usb\n\nSEP = '" + SEP_TIENDA + "'\np = Usb(0x0416, 0x5011, profile='TM-T88II')\n\n";
+  py += "try:\n    p.charcode('CP850')\nexcept:\n    try:\n        p.charcode('CP437')\n    except:\n        pass\n\n";
+  py += "def center(s, w=32):\n    s = s[:w]\n    spaces = (w - len(s)) // 2\n    return ' ' * spaces + s + ' ' * (w - len(s) - spaces)\n\n";
+  py += "def pad_lr(left, right, w=32):\n    left = left[:w - len(right) - 1]\n    spaces = w - len(left) - len(right)\n    return left + ' ' * spaces + right\n\n";
+
+  var lines = t_buildLines();
+  for(var i = 0; i < lines.length; i++){
+    var ln = lines[i];
+    if(ln.t === 'sep'){
+      py += "p.set(align='left', bold=False)\np.text(SEP + '\\n')\n";
+    } else {
+      var al = ln.t === 'c' ? 'center' : 'left';
+      var bd = ln.bold ? 'True' : 'False';
+      py += "p.set(align='" + al + "', bold=" + bd + ")\np.text(" + JSON.stringify(normalize(ln.txt || '') + '\\n') + ")\n";
+    }
+  }
+  py += "p.ln(3)\np.cut()\n";
+  var blob = new Blob([py], {type: 'text/plain'});
+  var a = mk('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ticket_tienda.py';
+  a.click();
+});
+
+document.getElementById('t_btnPrint').addEventListener('click', function(){
+  var txt = renderTXT(t_buildLines(), W_TIENDA, SEP_TIENDA) + '\n\n\n';
+  var w = window.open('', '_blank', 'width=320,height=700');
+  w.document.write('<html><head><style>body{font-family:"Courier New",Courier,monospace;font-size:9.5pt;white-space:pre;margin:0;padding:4px;}@media print{@page{margin:0;size:58mm auto;}}</style></head><body>' + esc(txt) + '</body></html>');
+  w.document.close();
+  w.focus();
+  setTimeout(function(){ w.print(); }, 400);
+});
+
 // INICIALIZACIÓN
 window.addEventListener('load', function(){
   var c_data = [
@@ -718,8 +906,16 @@ window.addEventListener('load', function(){
   
   document.getElementById('s_logoPreviewThumb').src = LOGOS['soriana'];
   
+  var t_data = [
+    {c:'1', d:'BOTANAS Y SEMILLAS', p:'$14.00'},
+    {c:'1', d:'CHURRITO CHILEYLIMON', p:'$18.00'},
+    {c:'1', d:'SABRITAS ADOBADAS CHIC', p:'$20.00'}
+  ];
+  t_data.forEach(function(r){ t_addRow(r.c, r.d, r.p); });
+  
   c_refresh();
   s_refresh();
+  t_refresh();
 });
 })();
 </script>
