@@ -492,39 +492,38 @@ function c_buildLines(){
     wrapText(gv('c_direccion'), W).forEach(function(ln){ L.push({t: 'c', txt: ln}); });
   }
   L.push({t: 'sep'});
-  L.push({t: 'c', txt: 'GRACIAS POR SU VISITA!', bold: true});
+  L.push({t: 'c', txt: '!GRACIAS POR SU VISITA!', bold: true});
   L.push({t: 'sep'});
-  L.push({t: 'l', txt: 'ORDEN DE MESA', bold: true});
+  L.push({t: 'l', txt: 'ORDEN DE MESA'});
   L.push({t: 'l', txt: 'FOLIO: ' + gv('c_folio')});
-  L.push({t: 'l', txt: 'FECHA: ' + fecha + '  HORA: ' + hora});
-  L.push({t: 'l', txt: 'MESA: ' + gv('c_mesa') + '   PERSONAS: ' + gv('c_personas')});
+  L.push({t: 'l', txt: 'FECHA: ' + fecha});
+  L.push({t: 'l', txt: 'HORA:  ' + hora});
+  L.push({t: 'l', txt: 'MESA:  ' + gv('c_mesa')});
+  L.push({t: 'l', txt: 'PERSONAS: ' + gv('c_personas')});
   L.push({t: 'l', txt: 'ORDEN: ' + gv('c_orden')});
-  L.push({t: 'l', txt: 'MESERO:'});
-  wrapText(gv('c_mesero'), W).forEach(function(ln){ L.push({t: 'l', txt: '  ' + ln}); });
+  L.push({t: 'l', txt: 'MESERO: ' + gv('c_mesero')});
   L.push({t: 'sep'});
-  L.push({t: 'l', txt: pad('CANT', 4, true) + ' ' + pad('DESCRIPCION', 18, true) + ' IMPORTE', bold: true});
+  L.push({t: 'l', txt: 'CANT DESCRIPCION    IMPORTE', bold: true});
   L.push({t: 'sep'});
   
   rows.forEach(function(r){
     var cant = pad(r.c, 4, true);
-    var imp = r.p;
-    var descMax = W - 4 - 1 - 1 - imp.length;
-    if(descMax < 8) descMax = 8;
-    var desc = pad(r.d, descMax, true);
-    L.push({t: 'l', txt: cant + ' ' + desc + ' ' + imp});
+    var desc = pad(r.d.slice(0, 16), 16, true);
+    var imp = pad(r.p, 12, false);
+    L.push({t: 'l', txt: cant + desc + imp});
   });
   
   L.push({t: 'sep'});
   L.push({t: 'l', txt: 'TOTAL ARTICULOS: ' + gv('c_totalArts')});
   L.push({t: 'sep'});
-  L.push({t: 'l', txt: 'SUBTOTAL:      ' + gv('c_subtotal')});
-  L.push({t: 'l', txt: 'IVA (16%):     ' + gv('c_iva')});
-  L.push({t: 'l', txt: 'TOTAL:         ' + gv('c_total'), bold: true});
+  L.push({t: 'l', txt: padLR('SUBTOTAL:', gv('c_subtotal'), W)});
+  L.push({t: 'l', txt: padLR('IVA (16%):', gv('c_iva'), W)});
+  L.push({t: 'l', txt: padLR('TOTAL:', gv('c_total'), W), bold: true});
   L.push({t: 'sep'});
   L.push({t: 'l', txt: 'FORMA DE PAGO: ' + c_pago});
   if(c_pago === 'EFECTIVO'){
-    L.push({t: 'l', txt: 'RECIBIDO:      ' + gv('c_recibido')});
-    L.push({t: 'l', txt: 'CAMBIO:        ' + gv('c_cambio')});
+    L.push({t: 'l', txt: padLR('RECIBIDO:', gv('c_recibido'), W)});
+    L.push({t: 'l', txt: padLR('CAMBIO:', gv('c_cambio'), W)});
   }
   L.push({t: 'sep'});
   L.push({t: 'c', txt: 'GRACIAS POR SU VISITA!', bold: true});
@@ -549,11 +548,11 @@ document.getElementById('c_btnDl').addEventListener('click', function(){
   for(var i = 0; i < lines.length; i++){
     var ln = lines[i];
     if(ln.t === 'sep'){
-      py += "p.set(align='left', bold=False)\np.text(SEP + '\\n')\n";
+      py += "p.set(align='left', bold=False)\np.text(SEP + '\n')\n";
     } else {
       var al = ln.t === 'c' ? 'center' : 'left';
       var bd = ln.bold ? 'True' : 'False';
-      py += "p.set(align='" + al + "', bold=" + bd + ")\np.text(" + JSON.stringify(normalize(ln.txt || '') + '\\n') + ")\n";
+      py += "p.set(align='" + al + "', bold=" + bd + ")\np.text(" + JSON.stringify(normalize(ln.txt || '') + '\n') + ")\n";
     }
   }
   py += "p.ln(3)\np.cut()\n";
@@ -652,20 +651,19 @@ function s_buildLines(){
   L.push({t: 'c', txt: 'TEL: ' + gv('s_tel')});
   L.push({t: 'c', txt: fecha + '  ' + hora});
   L.push({t: 'sep'});
-  L.push({t: 'l', txt: pad('CT', 2, true) + ' ' + pad('ARTICULO', 14, true) + ' ' + pad('P.U', 6, true) + ' ' + pad('TOTAL', 6, true), bold: true});
+  L.push({t: 'l', txt: 'CANT DESCRIPCION    IMPORTE', bold: true});
   L.push({t: 'sep'});
   
   rows.forEach(function(r){
-    var cant = pad(r.c, 2, true);
-    var desc = pad(r.d.slice(0, 14), 14, true);
-    var punit = pad(r.u, 6, true);
-    var total = pad(r.t, 6, true);
-    L.push({t: 'l', txt: cant + ' ' + desc + ' ' + punit + ' ' + total});
+    var cant = pad(r.c, 4, true);
+    var desc = pad(r.d.slice(0, 16), 16, true);
+    var imp = pad('$' + r.t, 12, false);
+    L.push({t: 'l', txt: cant + desc + imp});
   });
   
   L.push({t: 'sep'});
-  L.push({t: 'l', txt: pad('TOTAL:', 34, true) + gv('s_total'), bold: true});
-  L.push({t: 'l', txt: pad(s_pago, 34, true) + gv('s_total')});
+  L.push({t: 'l', txt: padLR('TOTAL:', gv('s_total'), W), bold: true});
+  L.push({t: 'l', txt: padLR(s_pago, gv('s_total'), W)});
   L.push({t: 'sep'});
   L.push({t: 'c', txt: 'ARTICULOS: ' + gv('s_totalArts')});
   L.push({t: 'sep'});
@@ -708,34 +706,23 @@ document.getElementById('s_btnDl').addEventListener('click', function(){
   py += "from PIL import Image\n\n";
   py += "SEP = '" + SEP42 + "'\n";
   py += "p = Usb(0x0416, 0x5011, profile='TM-T88II')\n\n";
-  py += "try:\n    p.charcode('CP850')\nexcept:\n    try:\n        p.charcode('CP437')\n    except:\n        pass\n\n";
   py += "# --- LOGO ---\n";
-  py += "p.set(align='center')\n";
+  py += "p.set(align='center', bold=False)\n";
   py += "logo = Image.open('" + logoFile + "').convert('RGB')\n";
   py += "MAX_W = 384\n";
   py += "if logo.width > MAX_W:\n    ratio = MAX_W / logo.width\n    logo = logo.resize((MAX_W, int(logo.height * ratio)), Image.LANCZOS)\n";
   py += "p.image(logo)\n\n";
 
   var lines = s_buildLines();
-  // primer bloque: nombre en bold width=2 height=2, resto normal
-  var firstNameDone = false;
   for(var i = 0; i < lines.length; i++){
     var ln = lines[i];
     if(ln.t === 'sep'){
-      py += "p.set(align='left', bold=False, font='b')\np.text(SEP + '\\n')\n";
+      py += "p.set(align='left', bold=False)\np.text(SEP + '\n')\n";
     } else {
       var al = ln.t === 'c' ? 'center' : 'left';
       var bd = ln.bold ? 'True' : 'False';
-      if(!firstNameDone && ln.bold && ln.t === 'c'){
-        // nombre principal → doble tamaño
-        py += "p.set(align='center', bold=True, width=2, height=2, font='b')\n";
-        py += "p.text(" + JSON.stringify(normalize(ln.txt || '') + '\\n') + ")\n";
-        py += "p.set(align='center', bold=False, width=1, height=1, font='b')\n";
-        firstNameDone = true;
-      } else {
-        py += "p.set(align='" + al + "', bold=" + bd + ", font='b')\n";
-        py += "p.text(" + JSON.stringify(normalize(ln.txt || '') + '\\n') + ")\n";
-      }
+      py += "p.set(align='" + al + "', bold=" + bd + ")\n";
+      py += "p.text(" + JSON.stringify(normalize(ln.txt || '') + '\n') + ")\n";
     }
   }
   py += "p.ln(3)\np.cut()\n";
@@ -801,10 +788,18 @@ function t_buildLines(){
   var hora = fmtTime(gvRaw('t_hora'));
 
   L.push({t: 'c', txt: gv('t_propietario'), bold: true});
-  if(gv('t_nombre')) L.push({t: 'c', txt: gv('t_nombre')});
-  if(gv('t_direccion1')) L.push({t: 'c', txt: gv('t_direccion1')});
-  if(gv('t_direccion2')) L.push({t: 'c', txt: gv('t_direccion2')});
-  if(gv('t_ubicacion_rfc')) L.push({t: 'c', txt: gv('t_ubicacion_rfc')});
+  if(gv('t_nombre')){
+    wrapText(gv('t_nombre'), W).forEach(function(ln){ L.push({t: 'c', txt: ln}); });
+  }
+  if(gv('t_direccion1')){
+    wrapText(gv('t_direccion1'), W).forEach(function(ln){ L.push({t: 'c', txt: ln}); });
+  }
+  if(gv('t_direccion2')){
+    wrapText(gv('t_direccion2'), W).forEach(function(ln){ L.push({t: 'c', txt: ln}); });
+  }
+  if(gv('t_ubicacion_rfc')){
+    wrapText(gv('t_ubicacion_rfc'), W).forEach(function(ln){ L.push({t: 'c', txt: ln}); });
+  }
   L.push({t: 'l', txt: ''});
   L.push({t: 'c', txt: fecha + ' ' + hora});
   L.push({t: 'l', txt: ''});
@@ -814,25 +809,22 @@ function t_buildLines(){
   L.push({t: 'l', txt: padLR('FOLIO:', gv('t_folio'), W)});
   L.push({t: 'l', txt: ''});
   
-  L.push({t: 'l', txt: 'CANT. DESCRIPCION        IMPORTE'});
+  L.push({t: 'l', txt: 'CANT DESCRIPCION    IMPORTE', bold: true});
   L.push({t: 'sep'});
   
   rows.forEach(function(r){
-    var cant = r.c;
-    var desc = r.d;
-    var imp = r.p;
-    var cantStr = pad(cant, 2, true);
-    var descStr = pad(desc, 20, true);
-    var impStr = pad(imp, 7, false);
-    L.push({t: 'l', txt: cantStr + '  ' + descStr + ' ' + impStr});
+    var cant = pad(r.c, 4, true);
+    var desc = pad(r.d.slice(0, 16), 16, true);
+    var imp = pad(r.p, 12, false);
+    L.push({t: 'l', txt: cant + desc + imp});
   });
   
   L.push({t: 'sep'});
   L.push({t: 'l', txt: 'NO. DE ARTICULOS: ' + gv('t_totalArts')});
   
-  L.push({t: 'l', txt: pad(normalize('TOTAL:'), 18, false) + ' ' + pad(gv('t_total'), 13, true)});
-  L.push({t: 'l', txt: pad(normalize('PAGO CON:'), 18, false) + ' ' + pad(gv('t_recibido'), 13, true)});
-  L.push({t: 'l', txt: pad(normalize('SU CAMBIO:'), 18, false) + ' ' + pad(gv('t_cambio'), 13, true)});
+  L.push({t: 'l', txt: padLR('TOTAL:', gv('t_total'), W)});
+  L.push({t: 'l', txt: padLR('PAGO CON:', gv('t_recibido'), W)});
+  L.push({t: 'l', txt: padLR('SU CAMBIO:', gv('t_cambio'), W)});
   L.push({t: 'l', txt: ''});
   
   if(gv('t_regimen')) L.push({t: 'c', txt: gv('t_regimen')});
@@ -847,19 +839,16 @@ function t_refresh(){
 
 document.getElementById('t_btnDl').addEventListener('click', function(){
   var py = "# -*- coding: utf-8 -*-\nfrom escpos.printer import Usb\n\nSEP = '" + SEP_TIENDA + "'\np = Usb(0x0416, 0x5011, profile='TM-T88II')\n\n";
-  py += "try:\n    p.charcode('CP850')\nexcept:\n    try:\n        p.charcode('CP437')\n    except:\n        pass\n\n";
-  py += "def center(s, w=32):\n    s = s[:w]\n    spaces = (w - len(s)) // 2\n    return ' ' * spaces + s + ' ' * (w - len(s) - spaces)\n\n";
-  py += "def pad_lr(left, right, w=32):\n    left = left[:w - len(right) - 1]\n    spaces = w - len(left) - len(right)\n    return left + ' ' * spaces + right\n\n";
 
   var lines = t_buildLines();
   for(var i = 0; i < lines.length; i++){
     var ln = lines[i];
     if(ln.t === 'sep'){
-      py += "p.set(align='left', bold=False)\np.text(SEP + '\\n')\n";
+      py += "p.set(align='left', bold=False)\np.text(SEP + '\n')\n";
     } else {
       var al = ln.t === 'c' ? 'center' : 'left';
       var bd = ln.bold ? 'True' : 'False';
-      py += "p.set(align='" + al + "', bold=" + bd + ")\np.text(" + JSON.stringify(normalize(ln.txt || '') + '\\n') + ")\n";
+      py += "p.set(align='" + al + "', bold=" + bd + ")\np.text(" + JSON.stringify(normalize(ln.txt || '') + '\n') + ")\n";
     }
   }
   py += "p.ln(3)\np.cut()\n";

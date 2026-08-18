@@ -1,83 +1,89 @@
 # -*- coding: utf-8 -*-
 from escpos.printer import Usb
 
-SEP = '-' * 32  # 58mm = 32 caracteres
-
-p = Usb(0x0416, 0x5011, profile='TM-T88II')
-
-try:
-    p.charcode("CP850")
-except:
-    try:
-        p.charcode("CP437")
-    except:
-        pass
-
-def center(s, w=32):
-    s = s[:w]
-    spaces = (w - len(s)) // 2
-    return ' ' * spaces + s + ' ' * (w - len(s) - spaces)
-
-def pad_lr(left, right, w=32):
-    left = left[:w - len(right) - 1]
-    spaces = w - len(left) - len(right)
-    return left + ' ' * spaces + right
+SEP = '--------------------------------'
+p = Usb(0x0416, 0x5011, profile="TM-T88II")
 
 # --- ENCABEZADO ---
 p.set(align='center', bold=True)
 p.text("LORENZO SERRANO ALONSO\n")
+
 p.set(align='center', bold=False)
-p.text("CREM. Y SALCHICHONERIA LOS CHINOS\n")
-p.text("PLAN DE SAN LUIS #1 TEL.56412086\n")
-p.text("SAN LORENZO LA CEBADA,CP.16035\n")
-p.text("XOCHIMILCO,CDMX RFC. SEAL700810D38\n")
+p.text("CREM. Y SALCHICHONERIA\n")
+p.text("LOS CHINOS\n")
+p.text("PLAN DE SAN LUIS #1\n")
+p.text("TEL.56412086\n")
+p.text("SAN LORENZO LA CEBADA\n")
+p.text("CP.16035\n")
+p.text("XOCHIMILCO, CDMX\n")
+p.text("RFC. SEAL700810D38\n")
 p.text("\n")
 
 # --- FECHA Y HORA ---
-p.text(center("16/07/2026 02:34 PM") + "\n")
+p.set(align='center', bold=False)
+p.text("16/07/2026 02:34 PM\n")
 p.text("\n")
 
 # --- DATOS DE VENTA ---
-p.text(pad_lr("CAJERO:", "VALERIA") + "\n")
-p.text(pad_lr("TURNO #", "9078") + "\n")
-p.text(pad_lr("FOLIO:", "613557") + "\n")
+p.set(align='left', bold=False)
+p.text(f"CAJERO:{'VALERIA':>25}\n")
+p.text(f"TURNO #{'9078':>24}\n")
+p.text(f"FOLIO:{'613557':>26}\n")
 p.text("\n")
 
-# --- CABECERA TABLA ---
-# CANT. DESCRIPCION        IMPORTE (total 32 chars)
-p.text("CANT. DESCRIPCION        IMPORTE\n")
+# --- PRODUCTOS ---
+p.set(align='left', bold=True)
+p.text("CANT ARTICULO     P.UNIT   TOTAL\n")
+
+p.set(align='left', bold=False)
 p.text(SEP + "\n")
 
-# --- PRODUCTOS ---
-# Formato: CANT. (2 chars) + "  " + DESC (20 chars max) + " " + IMPORTE (7 chars max)
-# Ejemplo: "1  BOTANAS Y SEMILLAS      $14.00"
 productos = [
-    (1, "BOTANAS Y SEMILLAS", 14.00),
-    (1, "CHURRITO CHILEYLIMON", 18.00),
-    (1, "SABRITAS ADOBADAS CHIC", 20.00),
+    (1, "BOTANAS Y SEMILL", 14.00, 14.00),
+    (1, "CHURRITO CHILEYL", 18.00, 18.00),
+    (1, "SABRITAS ADOBADA", 20.00, 20.00),
 ]
 
-for cant, desc, importe in productos:
-    imp_str = f"${importe:.2f}"
-    # Limitar descripción a 20 caracteres para asegurar alineación exacta
-    desc_cropped = desc[:20]
-    # cant (2 chars left) + "  " (2 chars) + desc (20 chars left) + " " + imp_str (7 chars right)
-    # Total = 2 + 2 + 20 + 1 + 7 = 32
-    linea = f"{cant:<2}  {desc_cropped:<20} {imp_str:>7}"
+def format_product_line(cant, desc, punit, total):
+    cant_str = str(cant)
+    desc_str = str(desc)
+    punit_str = f"{punit:.2f}" if isinstance(punit, (int, float)) else str(punit)
+    total_str = f"{total:.2f}" if isinstance(total, (int, float)) else str(total)
+    
+    desc_cropped = desc_str[:13]
+    line = f"{cant_str:<4}{desc_cropped:<13}{punit_str:>6}  {total_str:>7}"
+    
+    while len(line) > 32:
+        if "  " in line:
+            line = line.replace("  ", " ", 1)
+        else:
+            desc_cropped = desc_cropped[:-1]
+            line = f"{cant_str:<4}{desc_cropped:<13}{punit_str:>6} {total_str:>7}"
+            
+    if len(line) > 32:
+        line = line[:32]
+        
+    return line
+
+for cant, desc, punit, total in productos:
+    linea = format_product_line(cant, desc, punit, total)
     p.text(linea + "\n")
 
+p.set(align='left', bold=False)
 p.text(SEP + "\n")
 
 # --- TOTALES ---
+p.set(align='left', bold=False)
 p.text("NO. DE ARTICULOS: 3\n")
-p.text(pad_lr("TOTAL:", "$52.00") + "\n")
-p.text(pad_lr("PAGO CON:", "$52.00") + "\n")
-p.text(pad_lr("SU CAMBIO:", "$0.00") + "\n")
+p.text(f"TOTAL:{'$52.00':>26}\n")
+p.text(f"PAGO CON:{'$52.00':>23}\n")
+p.text(f"SU CAMBIO:{'$0.00':>22}\n")
 p.text("\n")
 
 # --- PIE DE TICKET ---
-p.set(align='center')
-p.text("REGIMEN DE INCORPORACION FISCAL\n")
+p.set(align='center', bold=False)
+p.text("REGIMEN DE INCORPORACION\n")
+p.text("FISCAL\n")
 p.text("WWW.ELEVENTA.COM\n")
 
 p.ln(3)
