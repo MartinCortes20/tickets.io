@@ -129,7 +129,8 @@ input:focus{outline:none;border-color:var(--gold);}
       <div class="field"><label>TOTAL ARTICULOS</label><input id="c_totalArts" value="36"/></div>
       <div class="field"><label>SUBTOTAL</label><input id="c_subtotal" value="$1,545.00"/></div>
       <div class="field"><label>IVA (16%)</label><input id="c_iva" value="$247.20"/></div>
-      <div class="field"><label>TOTAL</label><input id="c_total" value="$1,792.00"/></div>
+      <div class="field"><label>PROPINA</label><input id="c_propina" value="$0.00"/></div>
+      <div class="field full"><label>TOTAL</label><input id="c_total" value="$1,792.00"/></div>
     </div>
   </div>
   <div class="card">
@@ -518,6 +519,7 @@ function c_buildLines(){
   L.push({t: 'sep'});
   L.push({t: 'l', txt: padLR('SUBTOTAL:', gv('c_subtotal'), W)});
   L.push({t: 'l', txt: padLR('IVA (16%):', gv('c_iva'), W)});
+  L.push({t: 'l', txt: padLR('PROPINA:', gv('c_propina'), W)});
   L.push({t: 'l', txt: padLR('TOTAL:', gv('c_total'), W), bold: true});
   L.push({t: 'sep'});
   L.push({t: 'l', txt: 'FORMA DE PAGO: ' + c_pago});

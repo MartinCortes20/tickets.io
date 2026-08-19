@@ -88,6 +88,7 @@ p.text(SEP + "\n")
 p.set(align='left', bold=False)
 p.text(f"SUBTOTAL:{'$300.00':>23}\n")
 p.text(f"IVA (16%):{'$0.00':>22}\n")
+p.text(f"PROPINA:{'$0.00':>24}\n")
 
 p.set(align='left', bold=True)
 p.text(f"TOTAL:{'$300.00':>26}\n")
