@@ -550,7 +550,7 @@ document.getElementById('c_btnDl').addEventListener('click', function(){
   for(var i = 0; i < lines.length; i++){
     var ln = lines[i];
     if(ln.t === 'sep'){
-      py += "p.set(align='left', bold=False)\np.text(SEP + '\n')\n";
+      py += "p.set(align='left', bold=False)\np.text(SEP + '\\n')\n";
     } else {
       var al = ln.t === 'c' ? 'center' : 'left';
       var bd = ln.bold ? 'True' : 'False';
@@ -566,12 +566,10 @@ document.getElementById('c_btnDl').addEventListener('click', function(){
 });
 
 document.getElementById('c_btnPrint').addEventListener('click', function(){
-  var txt = renderTXT(c_buildLines(), W_CASINO, SEP32) + '\n\n\n';
-  var w = window.open('', '_blank', 'width=320,height=700');
-  w.document.write('<html><head><style>body{font-family:"Courier New",Courier,monospace;font-size:9.5pt;white-space:pre;margin:0;padding:4px;}@media print{@page{margin:0;size:58mm auto;}}</style></head><body>' + esc(txt) + '</body></html>');
-  w.document.close();
-  w.focus();
-  setTimeout(function(){ w.print(); }, 400);
+  fetch('http://localhost:8765/imprimir', {method: 'POST', body: JSON.stringify({lines: c_buildLines()})})
+    .then(function(r){ return r.json(); })
+    .then(function(j){ if(!j.ok) throw new Error(j.error); alert('Ticket impreso'); })
+    .catch(function(){ alert('Error: verifica que servidor.py esté corriendo y la impresora conectada'); });
 });
 
 // MODO SUPERMERCADO
@@ -719,7 +717,7 @@ document.getElementById('s_btnDl').addEventListener('click', function(){
   for(var i = 0; i < lines.length; i++){
     var ln = lines[i];
     if(ln.t === 'sep'){
-      py += "p.set(align='left', bold=False)\np.text(SEP + '\n')\n";
+      py += "p.set(align='left', bold=False)\np.text(SEP + '\\n')\n";
     } else {
       var al = ln.t === 'c' ? 'center' : 'left';
       var bd = ln.bold ? 'True' : 'False';
@@ -846,7 +844,7 @@ document.getElementById('t_btnDl').addEventListener('click', function(){
   for(var i = 0; i < lines.length; i++){
     var ln = lines[i];
     if(ln.t === 'sep'){
-      py += "p.set(align='left', bold=False)\np.text(SEP + '\n')\n";
+      py += "p.set(align='left', bold=False)\np.text(SEP + '\\n')\n";
     } else {
       var al = ln.t === 'c' ? 'center' : 'left';
       var bd = ln.bold ? 'True' : 'False';
