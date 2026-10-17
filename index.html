@@ -566,10 +566,14 @@ document.getElementById('c_btnDl').addEventListener('click', function(){
 });
 
 document.getElementById('c_btnPrint').addEventListener('click', function(){
-  fetch('http://localhost:8765/imprimir', {method: 'POST', body: JSON.stringify({lines: c_buildLines()})})
-    .then(function(r){ return r.json(); })
-    .then(function(j){ if(!j.ok) throw new Error(j.error); alert('Ticket impreso'); })
-    .catch(function(){ alert('Error: verifica que servidor.py esté corriendo y la impresora conectada'); });
+  fetch('http://localhost:8765/imprimir', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({lines: c_buildLines()})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){ if(d.ok) alert('Ticket impreso'); else alert('Error: ' + d.error); })
+  .catch(function(){ alert('Error: verifica que la app esté corriendo'); });
 });
 
 // MODO SUPERMERCADO
@@ -734,10 +738,14 @@ document.getElementById('s_btnDl').addEventListener('click', function(){
 });
 
 document.getElementById('s_btnPrint').addEventListener('click', function(){
-  fetch('http://localhost:8765/imprimir', {method: 'POST', body: JSON.stringify({lines: s_buildLines()})})
-    .then(function(r){ return r.json(); })
-    .then(function(j){ if(!j.ok) throw new Error(j.error); alert('Ticket impreso'); })
-    .catch(function(){ alert('Error: verifica que servidor.py esté corriendo y la impresora conectada'); });
+  fetch('http://localhost:8765/imprimir', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({lines: s_buildLines()})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){ if(d.ok) alert('Ticket impreso'); else alert('Error: ' + d.error); })
+  .catch(function(){ alert('Error: verifica que la app esté corriendo'); });
 });
 
 // MODO TIENDA
@@ -857,10 +865,14 @@ document.getElementById('t_btnDl').addEventListener('click', function(){
 });
 
 document.getElementById('t_btnPrint').addEventListener('click', function(){
-  fetch('http://localhost:8765/imprimir', {method: 'POST', body: JSON.stringify({lines: t_buildLines()})})
-    .then(function(r){ return r.json(); })
-    .then(function(j){ if(!j.ok) throw new Error(j.error); alert('Ticket impreso'); })
-    .catch(function(){ alert('Error: verifica que servidor.py esté corriendo y la impresora conectada'); });
+  fetch('http://localhost:8765/imprimir', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({lines: t_buildLines()})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){ if(d.ok) alert('Ticket impreso'); else alert('Error: ' + d.error); })
+  .catch(function(){ alert('Error: verifica que la app esté corriendo'); });
 });
 
 // INICIALIZACIÓN

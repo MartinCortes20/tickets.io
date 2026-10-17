@@ -5,7 +5,9 @@ from http.server import HTTPServer
 
 import os
 import shlex
+import shutil
 import subprocess
+import tempfile
 
 import objc
 import rumps
@@ -74,11 +76,14 @@ class App(rumps.App):
         panel.setAllowedFileTypes_(['py'])
         if not panel.runModal():
             return
-        path = panel.URL().path()
+        # root no tiene permiso (TCC) para leer Descargas/Escritorio: la app copia el archivo a /tmp.
+        path = os.path.join(tempfile.mkdtemp(), 'ticket.py')
+        shutil.copy(panel.URL().path(), path)
         # Equivale a `sudo python3 archivo.py`; osascript pide la contraseña en una ventana.
         cmd = 'PATH=/opt/homebrew/bin:/usr/local/bin:$PATH sudo python3 ' + shlex.quote(path)
         script = 'do shell script "%s" with administrator privileges' % cmd.replace('\\', '\\\\').replace('"', '\\"')
         r = subprocess.run(['osascript', '-e', script], capture_output=True, text=True)
+        shutil.rmtree(os.path.dirname(path), ignore_errors=True)
         if r.returncode:
             rumps.alert('Error al imprimir', r.stderr.strip()[-500:])
         else:

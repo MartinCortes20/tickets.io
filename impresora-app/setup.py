@@ -16,5 +16,4 @@ setup(
             'LSUIElement': True,  # solo menu bar, sin ícono en el Dock
         },
     }},
-    setup_requires=['py2app'],
 )
