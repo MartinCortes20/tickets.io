@@ -1,1 +1,919 @@
-/Users/martinfranciscocortesbuendia/Desktop/ImportantFolders/papaTrabajo/tickets/index.html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Generador de Tickets - Versión Profesional</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Bebas+Neue&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f0e0d;--paper:#faf6f0;--ink:#1a1612;
+  --red:#c0392b;--gold:#c8a45a;--muted:#666;
+  --border:#2a2620;--radius:4px;
+  --mono:'IBM Plex Mono','Courier New',Courier,monospace;
+  --display:'Bebas Neue',sans-serif;
+}
+body{background:var(--bg);min-height:100vh;font-family:var(--mono);
+  display:flex;flex-direction:column;align-items:center;
+  padding:24px 12px 60px;color:var(--paper);}
+.mode-tabs{width:100%;max-width:440px;display:flex;gap:0;margin-bottom:20px;
+  border:1px solid var(--border);border-radius:6px;overflow:hidden;}
+.mode-tab{flex:1;padding:12px;background:#1a1814;color:var(--muted);
+  font-family:var(--mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;
+  border:none;cursor:pointer;transition:all .25s;border-right:1px solid var(--border);}
+.mode-tab:last-child{border-right:none;}
+.mode-tab.active{background:var(--gold);color:var(--ink);font-weight:700;}
+.layout{width:100%;max-width:440px;display:flex;flex-direction:column;gap:16px;}
+.card{background:#1a1814;border:1px solid var(--border);border-radius:6px;padding:16px;}
+.card-title{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.card-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.field{display:flex;flex-direction:column;gap:5px;}
+.field.full{grid-column:1/-1;}
+label{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);}
+input{background:#0f0e0d;border:1px solid var(--border);border-radius:var(--radius);
+  color:var(--paper);font-family:var(--mono);font-size:13px;padding:8px 10px;
+  width:100%;transition:border-color .2s;text-transform:uppercase;}
+input[type=date],input[type=time]{text-transform:none;}
+input:focus{outline:none;border-color:var(--gold);}
+.pago-toggle{display:flex;gap:8px;}
+.pago-btn{flex:1;padding:9px;border-radius:var(--radius);border:1px solid var(--border);
+  background:#0f0e0d;color:var(--muted);font-family:var(--mono);font-size:11px;
+  letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .2s;}
+.pago-btn.active{background:var(--gold);color:var(--ink);border-color:var(--gold);font-weight:700;}
+.productos-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
+.producto-row{display:grid;grid-template-columns:44px 1fr 80px 32px;gap:6px;align-items:center;}
+.producto-row input{padding:7px 8px;font-size:12px;}
+.super-row{display:grid;grid-template-columns:36px 1fr 68px 68px 32px;gap:5px;align-items:center;}
+.super-row input{padding:7px 8px;font-size:12px;}
+.btn-remove{background:none;border:1px solid var(--border);color:var(--muted);
+  border-radius:var(--radius);width:32px;height:36px;cursor:pointer;font-size:18px;
+  transition:all .2s;display:flex;align-items:center;justify-content:center;}
+.btn-remove:hover{border-color:var(--red);color:var(--red);}
+.btn-add{background:none;border:1px dashed var(--border);color:var(--muted);
+  border-radius:var(--radius);width:100%;padding:9px;cursor:pointer;
+  font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;transition:all .2s;}
+.btn-add:hover{border-color:var(--gold);color:var(--gold);}
+.ticket-preview{background:var(--paper);color:var(--ink);border-radius:6px;
+  padding:20px 16px;font-family:'Courier New',Courier,monospace;
+  font-size:11px;line-height:1.5;white-space:pre-wrap;overflow-x:auto;position:relative;}
+.ticket-preview::before{content:'VISTA PREVIA';position:absolute;top:-10px;left:16px;
+  background:var(--gold);color:var(--ink);font-size:8px;letter-spacing:3px;
+  padding:2px 8px;border-radius:2px;font-weight:700;}
+.actions{display:flex;gap:10px;}
+.btn-print{flex:1;background:var(--gold);color:var(--ink);border:none;
+  border-radius:var(--radius);font-family:var(--mono);font-size:12px;font-weight:700;
+  letter-spacing:3px;text-transform:uppercase;padding:14px;cursor:pointer;transition:all .2s;}
+.btn-print:hover{background:#d4a830;transform:translateY(-1px);}
+.btn-dl{background:none;border:1px solid var(--border);color:var(--muted);
+  border-radius:var(--radius);font-family:var(--mono);font-size:11px;
+  letter-spacing:2px;text-transform:uppercase;padding:14px 16px;cursor:pointer;transition:all .2s;}
+.btn-dl:hover{border-color:var(--paper);color:var(--paper);}
+.cols-label{display:grid;gap:6px;margin-bottom:4px;}
+.cols-label.casino-cols{grid-template-columns:44px 1fr 80px 32px;}
+.cols-label.super-cols{grid-template-columns:36px 1fr 68px 68px 32px;}
+.cols-label span{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+.chain-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
+.chain-btn{padding:9px 6px;border-radius:var(--radius);border:1px solid var(--border);
+  background:#0f0e0d;color:var(--muted);font-family:var(--mono);font-size:10px;
+  letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s;}
+.chain-btn:hover{border-color:var(--gold);color:var(--gold);}
+.chain-btn.active{background:var(--gold);color:var(--ink);border-color:var(--gold);font-weight:700;}
+.section-hidden{display:none;}
+.logo-preview{background:#fff;border-radius:4px;padding:12px;min-height:90px;
+  display:flex;align-items:center;justify-content:center;}
+.logo-preview img{max-width:240px;max-height:66px;object-fit:contain;}
+</style>
+</head>
+<body>
+
+<div class="mode-tabs" id="modeTabs">
+  <button class="mode-tab active" data-mode="casino">🍽 RESTAURANTE</button>
+  <button class="mode-tab" data-mode="super">🛒 SUPERMERCADO</button>
+  <button class="mode-tab" data-mode="tienda">🏪 TIENDA</button>
+</div>
+
+<!-- MODO RESTAURANTE -->
+<div class="layout" id="casinoMode">
+  <div class="card">
+    <div class="card-title">NEGOCIO</div>
+    <div class="grid-2">
+      <div class="field full"><label>NOMBRE</label><input id="c_nombre" value="TAQUERIA LA MORENITA"/></div>
+      <div class="field full"><label>DIRECCION</label><input id="c_direccion" value="CONSTITUCION DE 1824"/></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">ORDEN</div>
+    <div class="grid-2">
+      <div class="field"><label>FOLIO</label><input id="c_folio" value="001234"/></div>
+      <div class="field"><label>FECHA</label><input id="c_fecha" type="date"/></div>
+      <div class="field"><label>MESA</label><input id="c_mesa" value="18"/></div>
+      <div class="field"><label>HORA</label><input id="c_hora" type="time"/></div>
+      <div class="field"><label>PERSONAS</label><input id="c_personas" value="3"/></div>
+      <div class="field"><label>ORDEN #</label><input id="c_orden" value="4"/></div>
+      <div class="field full"><label>MESERO</label><input id="c_mesero" value="PEDRO TELLEZ"/></div>
+      <div class="field full"><label>TERMINAL</label><input id="c_terminal" value="2-PDV1"/></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">PRODUCTOS</div>
+    <div class="cols-label casino-cols"><span>CANT</span><span>DESCRIPCION</span><span>IMPORTE</span><span></span></div>
+    <div class="productos-list" id="c_productosList"></div>
+    <button class="btn-add" id="c_btnAdd">+ AGREGAR PRODUCTO</button>
+  </div>
+  <div class="card">
+    <div class="card-title">TOTALES</div>
+    <div class="grid-2">
+      <div class="field"><label>TOTAL ARTICULOS</label><input id="c_totalArts" value="36"/></div>
+      <div class="field"><label>SUBTOTAL</label><input id="c_subtotal" value="$1,545.00"/></div>
+      <div class="field"><label>IVA (16%)</label><input id="c_iva" value="$247.20"/></div>
+      <div class="field"><label>PROPINA</label><input id="c_propina" value="$0.00"/></div>
+      <div class="field full"><label>TOTAL</label><input id="c_total" value="$1,792.00"/></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">PAGO</div>
+    <div class="grid-2">
+      <div class="field full"><label>FORMA DE PAGO</label><div class="pago-toggle"><button class="pago-btn active" id="c_btnEfectivo">EFECTIVO</button><button class="pago-btn" id="c_btnTerminal">TERMINAL</button></div></div>
+      <div class="field" id="c_campoRecibido"><label>MONTO RECIBIDO</label><input id="c_recibido" value="$1,800.00"/></div>
+      <div class="field" id="c_campoCambio"><label>CAMBIO</label><input id="c_cambio" value="$8.00"/></div>
+    </div>
+  </div>
+  <div class="ticket-preview" id="c_ticketPreview"></div>
+  <div class="actions"><button class="btn-dl" id="c_btnDl">DESCARGAR .PY</button><button class="btn-print" id="c_btnPrint">IMPRIMIR TICKET</button></div>
+</div>
+
+<!-- MODO SUPERMERCADO -->
+<div class="layout section-hidden" id="superMode">
+  <div class="card">
+    <div class="card-title">CADENA</div>
+    <div class="chain-grid" id="s_chainGrid">
+      <button class="chain-btn active" data-key="soriana">SORIANA</button>
+      <button class="chain-btn" data-key="walmart">WALMART</button>
+      <button class="chain-btn" data-key="costco">COSTCO</button>
+      <button class="chain-btn" data-key="sams">SAM'S CLUB</button>
+      <button class="chain-btn" data-key="chedraui">CHEDRAUI</button>
+    </div>
+    <div class="logo-preview"><img src="" alt="logo" id="s_logoPreviewThumb"/></div>
+  </div>
+  <div class="card">
+    <div class="card-title">NEGOCIO</div>
+    <div class="grid-2">
+      <div class="field full"><label>NOMBRE TIENDA</label><input id="s_nombre" value="TACUBAYA"/></div>
+      <div class="field full"><label>RAZON SOCIAL</label><input id="s_razon" value="TIENDAS SORIANA, S.A. DE C.V."/></div>
+      <div class="field full"><label>REGIMEN</label><input id="s_regimen" value="REGIMEN GENERAL DE LEY"/></div>
+      <div class="field full"><label>DIRECCION</label><input id="s_direccion" value="GRAL JOSE MORAN 3"/></div>
+      <div class="field full"><label>COLONIA / CP</label><input id="s_colonia" value="SAN MIGUEL CHAPULTEPEC 11850"/></div>
+      <div class="field"><label>TELEFONO</label><input id="s_tel" value="55 7450 1510"/></div>
+      <div class="field"><label>FECHA</label><input id="s_fecha" type="date"/></div>
+      <div class="field"><label>HORA</label><input id="s_hora" type="time"/></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">PRODUCTOS</div>
+    <div class="cols-label super-cols"><span>CANT</span><span>ARTICULO</span><span>P.UNIT</span><span>TOTAL</span><span></span></div>
+    <div class="productos-list" id="s_productosList"></div>
+    <button class="btn-add" id="s_btnAdd">+ AGREGAR PRODUCTO</button>
+  </div>
+  <div class="card">
+    <div class="card-title">TOTALES</div>
+    <div class="grid-2">
+      <div class="field"><label>TOTAL ARTICULOS</label><input id="s_totalArts" value="27"/></div>
+      <div class="field"><label>TOTAL</label><input id="s_total" value="$944.20"/></div>
+      <div class="field full"><label>FORMA DE PAGO</label><div class="pago-toggle"><button class="pago-btn active" id="s_btnEfectivo">EFECTIVO</button><button class="pago-btn" id="s_btnTarjeta">TARJETA</button></div></div>
+      <div class="field"><label>MONTO RECIBIDO</label><input id="s_recibido" value="$944.20"/></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">BENEFICIOS / PIE</div>
+    <div class="grid-2">
+      <div class="field full"><label>AHORRO TOTAL</label><input id="s_ahorro" value="-$104.00"/></div>
+      <div class="field full"><label>PUNTOS</label><input id="s_puntos" value="12"/></div>
+      <div class="field full"><label>ATENDIO</label><input id="s_atiendio" value="REGINA GONZALEZ"/></div>
+      <div class="field full"><label>MENSAJE PIE</label><input id="s_mensajePie" value="GRACIAS POR TU COMPRA!"/></div>
+      <div class="field full"><label>SITIO WEB</label><input id="s_web" value="WWW.SORIANA.COM"/></div>
+      <div class="field full"><label>SLOGAN</label><input id="s_slogan" value="SORIANA: CALIDAD Y AHORRO"/></div>
+      <div class="field full"><label>VERSION</label><input id="s_version" value="VERSION: 4.41.0.0"/></div>
+      <div class="field full"><label>CODIGO BARRAS</label><input id="s_barcode" value="7501234567890"/></div>
+    </div>
+  </div>
+  <div class="ticket-preview" id="s_ticketPreview"></div>
+  <div class="actions"><button class="btn-dl" id="s_btnDl">DESCARGAR .PY</button><button class="btn-print" id="s_btnPrint">IMPRIMIR TICKET</button></div>
+</div>
+
+<!-- MODO TIENDA Y ABARROTES -->
+<div class="layout section-hidden" id="tiendaMode">
+  <div class="card">
+    <div class="card-title">PROPIETARIO Y NEGOCIO</div>
+    <div class="grid-2">
+      <div class="field full"><label>PROPIETARIO</label><input id="t_propietario" value="LORENZO SERRANO ALONSO"/></div>
+      <div class="field full"><label>NOMBRE COMERCIAL</label><input id="t_nombre" value="CREM. Y SALCHICHONERIA LOS CHINOS"/></div>
+      <div class="field full"><label>DIRECCION LINEA 1</label><input id="t_direccion1" value="PLAN DE SAN LUIS #1 TEL.56412086"/></div>
+      <div class="field full"><label>DIRECCION LINEA 2</label><input id="t_direccion2" value="SAN LORENZO LA CEBADA,CP.16035"/></div>
+      <div class="field full"><label>UBICACION Y RFC</label><input id="t_ubicacion_rfc" value="XOCHIMILCO,CDMX RFC. SEAL700810D38"/></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">DATOS DE VENTA</div>
+    <div class="grid-2">
+      <div class="field"><label>FECHA</label><input id="t_fecha" type="date"/></div>
+      <div class="field"><label>HORA</label><input id="t_hora" type="time"/></div>
+      <div class="field full"><label>CAJERO</label><input id="t_cajero" value="VALERIA"/></div>
+      <div class="field"><label>TURNO #</label><input id="t_turno" value="9078"/></div>
+      <div class="field"><label>FOLIO</label><input id="t_folio" value="613557"/></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">PRODUCTOS</div>
+    <div class="cols-label casino-cols"><span>CANT</span><span>DESCRIPCION</span><span>IMPORTE</span><span></span></div>
+    <div class="productos-list" id="t_productosList"></div>
+    <button class="btn-add" id="t_btnAdd">+ AGREGAR PRODUCTO</button>
+  </div>
+  <div class="card">
+    <div class="card-title">TOTALES</div>
+    <div class="grid-2">
+      <div class="field"><label>TOTAL ARTICULOS</label><input id="t_totalArts" value="3"/></div>
+      <div class="field"><label>TOTAL</label><input id="t_total" value="$52.00"/></div>
+      <div class="field"><label>PAGO CON</label><input id="t_recibido" value="$52.00"/></div>
+      <div class="field"><label>CAMBIO</label><input id="t_cambio" value="$0.00"/></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">PIE / REGIMEN</div>
+    <div class="grid-2">
+      <div class="field full"><label>REGIMEN</label><input id="t_regimen" value="REGIMEN DE INCORPORACION FISCAL"/></div>
+      <div class="field full"><label>SITIO WEB</label><input id="t_web" value="WWW.ELEVENTA.COM"/></div>
+    </div>
+  </div>
+  <div class="ticket-preview" id="t_ticketPreview"></div>
+  <div class="actions"><button class="btn-dl" id="t_btnDl">DESCARGAR .PY</button><button class="btn-print" id="t_btnPrint">IMPRIMIR TICKET</button></div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+// LOGOS EN BASE64
+var LOGOS = {
+  'soriana': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFIAAABkCAMAAABbbwmTAAAAY1BMVEUAAAD///////////////////////////////////////////////////////////9/f38jIyMhISEAAAAYGBh2dnYjIyMAAAAYGBg6OjowMDB/f38hISEAAAAYGBhERER/f38AAAAAAAD//y4bGxtFRUVycnIwMDBkZGQKZcPOAAAADnRSTlMAUM/PIODwv1CQv29wn0UIkUoAAAFmSURBVFjD7djbcoMgEIVhNgTF5P1fdmLUgLHJzmQyF+2/lZ3mYYEdXGE4jiszzWmQUmMZWkR4M2hooIYJ/f+DWpZtyu0phElQqqyGpIeAhPQgd9Y6DEjL6l6qIRw4rxEqbTO2DtE7m/RC4zpbJWSJ3uEMnWxH9INVblgG07vCUIcWU/Up27V9dOYObXUN1hUvqr9tkdhWYTLJu1QXWmZZqmIm3eQsxdDzroTRLEqQqXjdNY7T9E5d3SqBq2oIB27IZyX1hKqmIqgZVZ4U1XjePFV1r5VjOoQb7TufBnmWgL0qQnug51kc/oTfBkWz22UqgnO8C+cPhzIVTwcZQ88JIMN1bSfocwJIN/vy+ftYq6kIyvIZDP1PAKmtxrNAlrcP+nu3sx4FEiFqJ5CeBvJbP7cB6RS0S6iLUPUJXy9XofZEEmO0CY/UZk3WlT6V0jaH03WbPWvW9BXh+wdAY7FbNMPVjQAAAABJRU5ErkJggg==',
+  'walmart': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFIAAABkCAMAAABbmWM9AAAAh1BMVEUAAAD///////////////////////////////////////////////////////9/f38AAAAYGBhBQUEAAAAiIiIAAAAYGBgAAAAiIiJycnI/Pz8AAAAYGBg/Pz8AAAAiIiI/Pz+fn58/Pz8AAAAiIiL///+BgYGVlZUC4CkhAAAALnRSTlMAUO/PIODwv8+wj39Q3++Pv7/fMO/vr7Dvn3Dvz59wz+/P73Dv7++/n3Dv379/v19/n68xrMxiAAABoElEQVR4Ae3T22qDQBCG4U1ozOFgQo2Klnr/h5iutMg6szPdS/Hz3PFhTZhvd/OPEXlS5tK8rJRBwqyxoCxphLyJXbqPthI4YdzYRpOG4AyX5Xb3GEyqEeA7JbHnJ2T9qY3tTP/+nso+FFShy26vDdWOhjlyXUSr0jLfakQz0ydFm/pVKOZeGpGuWSg7FfFOVH2sUNp6dE2Q94Iwl1sq+ag0UuPmhCy9PDRRE3YI8TgUIs4j1fE9pQzeb4Q2jLvWWYlY25RH7Srky67mMMeH2F5a8/hTITekphJ28S9pLGMTGbWn4PpNCibCjDxacQhP5F4hDmUe8yb/iOQHqbXmJ/JWwyZkaWQ7fpUZOcK5Qm7qR+CT5tdwhT3X+kL4gVVhL4UxtmzqL1CrQh3qN6hVgR/JVSE/jh+f6D/PBmSZlYv2W/SUdSj9lt1eH1K/KoVU7z0UN1Lad+T2FNVfBF7fJLKsqsiUYhkZknaNyLJ2ZJ3PKmRZZSLLR0WWxYq8L2UWGZFGmhF5UGZEfiTtHdJD05Y+G/NP1JY+27X86Sjtw2n/IY7T/o8c2TQzMj9z4D1O2wM/DLwAAAAASUVORK5CYII=',
+  'costco': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFIAAABkCAMAAABbmWM9AAAAZlBMVEUAAAD///////////////////////////////////////////8AAAAYGBgAAAAYGBj/f38YGBhEREQAAAAYGBgAAAAfHx8YGBgAAAAYGBhFRUUAAAAYGBh/f38YGBgAAAAYGBh/f38YGBgYGBiZmZkYGBgYGBh/f38YGBgYGBj29va6urqYGuxSAAAAFnRSTlMAUO/PIODwv7BQv69Qn3Bgz3Bg78/QQf4BAAABe0lEQVR4Ae3TXXKDIAwGYKEwKJII2vu/yrYTD61Nl22fcn57Jp+XhB+wHDPmeHJr1jVpepVkPISxROVUPaVLI5o1V0kP4b0M4mkA0dhTd2MruQjLrPfpAEwma/Tj6D8N+pdeR8hYuvO3hrBppvJXJ8dG25SER5Q3SLvx6lWq9OZkMmkJPeVkR5N+PDdN5snyqQhpDQU5oww9rp3cWJ4u/fq1FpU68wkUpyMh7bSbgjSxI7Q1i4ruHcTWiLV1SIvZRwZtFbG8pqF3sOryK/GobqQopJXHtHlZ3UtB0sz9SZqPZNQ6pM2sW6HeJ+TzA8t1GNCeNqYvJGSFbI0yv8wE2dJGly3TIhAahSJkK2SNkIzSQu7qJSFbI6wQZkUuK0J6QjaNcZ0k5DUhGyEbwU0mNpFCMNquqyVt2SXz9Tta1p1l2LLaOcsGfy/7qvYt+5p9n7+Ltez7/m3/q+3b/tx/dCfH+7rH2/v+GmJxkx0/vP4AJI7MpN2KBg8AAAAASUVORK5CYII=',
+  'sams': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFIAAABkCAMAAABbmWM9AAAAY1BMVEUAAAD///////////////////////////////////////////////////////////////////////////////////////////8AAAAAAAD///8YGBh/f38AAAAYGBgAAAAYGBh/f38AAAAAAAD//19/f38AAADbWuiuAAAAHHRSTlMAUO/vz3DfIO/PICCvz7Cvj3+Qz59vsL9/z+9vz2+pxCzQAAABdklEQVR4Ae3T226CQBCA4V2gKAcF5L2f/6k2bdIos9vNkH4V/z+Z3Gy6S3c5HB4xZc/6tCbT9ECnUyNo8MlOiT7OTPpiK81rQ+PQoM6wjuvYOhiMGoP+nWHyVhjjCjquuPECbyImSwsnshisNoiJLqHJgT0uE/pHn1yoVn0R0mKbNnbCRUeLryh0fPm9kpAVyhSPtHILkLzYpLxSIRthC9KKKOTxSVVhU+fkPw1d+UQhbZjRRlQoJr4kU/o2Dwe5HVrxhULaMKPNaBZY5g6k3EZs97lNfj7llLz/rhMyK6lX7oWc0uK0E9oN0lKVkGttWpBWyKz2qJWsVCqhrDzJ0h8lFQoJH8xSV6Zk5bSf/SJJSKNfZkULuSlZzJg/nrUwZU76R/4lWcmc/LUzs2hJzJrpx/ucs84+Wb8kSxPmm2pE9OELiv/P6l+WJFwV6sZfq1GvKkL/Fev1ft+77vX3+V/3r/2uP6+v/8UfLO+X/9++5fsGhr50Tfb8+B0AAAAASUVORK5CYII=',
+  'chedraui': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFIAAABkCAMAAABbmWM9AAAAY1BMVEUAAAD///////////////////////////////////////////////////////////////////////////////////////////8AAAAAAAD///8YGBgYGBgAAAD/f38YGBgYGBgYGBgAAAAYGBgAAAD///9/f38AAAD///+fn59/f38YGBjLy8sAAAAYGBhcVYvCAAAAGnRSTlMAUO/Pv3DvsI/fIGC/358gcJ9wz4C/z2/Pj4Bp4N8AAAF2SURBVFjD7dPZboJQFIVhmyGHSh1qR8R5Nf//K01JgXJ6iL2o+e+G76T8hDWzR3LGiCkbWqbL/ynp8M3HjT6rOSOtT/T0dI+QleX0teOUnGm4oJ3HrSQzT37O0/1h04ZZ6Y48JVRdVIU8NvZ6RIWw+jhOk+STmPhaqTUl+qXGH4VdqMXGP2O4JQsl/SzJj2u4JfPJFhPeMVyTjU+LVHstHMMtGZ8CbF0JbknTJGtHS7gl0WZ/MrhUzWLiJfPwTt5nbC3hHd7Mn3nMBdwR7bzY2izhGd6+q/oKbm+fFwJzDfe2O57Z++2Jq5YEuCpP1G3AB7wR40lePMKruaqv3oHB+3tE+V3AFcyLRqLqPVyRp+oq4ArS+yGqr2DgJuC3WN8I3JDjqx64gfhA6hiBe3J8VQU3pJvUCB7I8VUN3JMvqz7ADXnNc0C1MqnLuPLYUE9+8fiT9ZT7/t/6U/Zn/d/2D/313/Zf/f3+yP+bZ/gvN4wfPRR+DwAAAABJRU5ErkJggg=='
+};
+
+// CONSTANTES
+var W_CASINO = 32;
+var W_SUPER = 32;
+var W_TIENDA = 32;
+var SEP32 = '================================';
+var SEP42 = '================================';
+var SEP_TIENDA = '--------------------------------';
+
+// NORMALIZACIÓN
+var LATIN_MAP = {
+  'á':'a','é':'e','í':'i','ó':'o','ú':'u',
+  'Á':'A','É':'E','Í':'I','Ó':'O','Ú':'U',
+  'ü':'u','Ü':'U','ñ':'n','Ñ':'N',
+  '\u00a1':'!','\u00bf':'?','\u2019':"'",'`':"'"
+};
+function normalize(s){
+  s = String(s || '');
+  return s.replace(/[^\x00-\x7F]/g, function(c){
+    return LATIN_MAP[c] !== undefined ? LATIN_MAP[c] : '';
+  });
+}
+
+function pad(s, n, right){
+  s = normalize(s).slice(0, n);
+  return right ? s.padEnd(n) : s.padStart(n);
+}
+
+function center(s, W){
+  s = normalize(s).slice(0, W);
+  var spaces = Math.floor((W - s.length) / 2);
+  return ' '.repeat(spaces) + s + ' '.repeat(W - s.length - spaces);
+}
+
+function padLR(left, right, W){
+  left = normalize(left);
+  right = normalize(right);
+  var spaces = W - left.length - right.length;
+  if(spaces < 1) spaces = 1;
+  return left + ' '.repeat(spaces) + right;
+}
+
+function esc(s){
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function gv(id){
+  var el = document.getElementById(id);
+  return el ? normalize(el.value || '').toUpperCase() : '';
+}
+
+function gvRaw(id){
+  var el = document.getElementById(id);
+  return el ? (el.value || '') : '';
+}
+
+function fmtDate(f){
+  if(!f) return '';
+  var p = f.split('-');
+  return p[2] + '/' + p[1] + '/' + p[0];
+}
+
+function fmtTime(h){
+  if(!h) return '';
+  var hm = h.split(':');
+  var hr = parseInt(hm[0]);
+  return (hr > 12 ? hr - 12 : (hr || 12)).toString().padStart(2, '0') + ':' + hm[1] + ' ' + (hr >= 12 ? 'PM' : 'AM');
+}
+
+function mk(tag){
+  return document.createElement(tag || 'input');
+}
+
+function upInput(el, cb){
+  el.addEventListener('input', function(){
+    if(this.type !== 'date' && this.type !== 'time'){
+      this.value = normalize(this.value).toUpperCase();
+    }
+    cb();
+  });
+}
+
+function wrapText(str, W){
+  str = normalize(str);
+  if(!str) return [];
+  var words = str.split(' ');
+  var lines = [];
+  var cur = '';
+  for(var i = 0; i < words.length; i++){
+    var w = words[i];
+    if(!w) continue;
+    if(!cur){
+      cur = w.slice(0, W);
+      continue;
+    }
+    if((cur + ' ' + w).length <= W){
+      cur += ' ' + w;
+    } else {
+      lines.push(cur);
+      cur = w.slice(0, W);
+    }
+  }
+  if(cur) lines.push(cur);
+  return lines;
+}
+
+// MODO ACTUAL
+var currentMode = 'casino';
+document.querySelectorAll('.mode-tab').forEach(function(tab){
+  tab.addEventListener('click', function(){
+    currentMode = this.dataset.mode;
+    document.querySelectorAll('.mode-tab').forEach(function(t){ t.classList.remove('active'); });
+    this.classList.add('active');
+    var cmode = document.getElementById('casinoMode');
+    var smode = document.getElementById('superMode');
+    var tmode = document.getElementById('tiendaMode');
+    
+    cmode.classList.add('section-hidden');
+    smode.classList.add('section-hidden');
+    tmode.classList.add('section-hidden');
+    
+    if(currentMode === 'casino'){
+      cmode.classList.remove('section-hidden');
+    } else if(currentMode === 'super'){
+      smode.classList.remove('section-hidden');
+    } else if(currentMode === 'tienda'){
+      tmode.classList.remove('section-hidden');
+    }
+  });
+});
+
+// RENDER HTML
+function renderHTML(lines, W, SEP){
+  var html = '';
+  for(var i = 0; i < lines.length; i++){
+    var ln = lines[i];
+    if(ln.t === 'sep'){
+      html += esc(SEP) + '\n';
+      continue;
+    }
+    var txt = ln.txt || '';
+    if(ln.t === 'c') txt = center(txt, W);
+    else txt = pad(txt, W, true);
+    html += ln.bold ? '<strong>' + esc(txt) + '</strong>\n' : esc(txt) + '\n';
+  }
+  return html;
+}
+
+// RENDER TXT PARA IMPRESIÓN
+function renderTXT(lines, W, SEP){
+  var txt = '';
+  for(var i = 0; i < lines.length; i++){
+    var ln = lines[i];
+    if(ln.t === 'sep'){
+      txt += SEP + '\n';
+      continue;
+    }
+    var t = ln.txt || '';
+    if(ln.t === 'c') t = center(t, W);
+    else t = pad(t, W, true);
+    txt += t + '\n';
+  }
+  return txt;
+}
+
+// MODO RESTAURANTE
+var c_pago = 'EFECTIVO';
+var now = new Date();
+document.getElementById('c_fecha').value = now.toISOString().split('T')[0];
+document.getElementById('c_hora').value = now.toTimeString().slice(0,5);
+
+function c_addRow(c, d, p){
+  c = c || '1';
+  d = normalize(d || '').toUpperCase();
+  p = p || '';
+  var list = document.getElementById('c_productosList');
+  var row = mk('div');
+  row.className = 'producto-row';
+  var i0 = mk(); i0.value = c; i0.placeholder = '1';
+  var i1 = mk(); i1.value = d; i1.placeholder = 'DESCRIPCION';
+  var i2 = mk(); i2.value = p; i2.placeholder = '$0.00';
+  var btn = mk('button'); btn.className = 'btn-remove'; btn.innerHTML = '&times;';
+  btn.addEventListener('click', function(){ row.remove(); c_refresh(); });
+  [i0, i1, i2].forEach(function(el){ upInput(el, c_refresh); });
+  [i0, i1, i2, btn].forEach(function(el){ row.appendChild(el); });
+  list.appendChild(row);
+  c_refresh();
+}
+
+function c_getRows(){
+  return Array.from(document.querySelectorAll('#c_productosList .producto-row')).map(function(r){
+    var ii = r.querySelectorAll('input');
+    return {
+      c: normalize(ii[0].value).toUpperCase(),
+      d: normalize(ii[1].value).toUpperCase(),
+      p: normalize(ii[2].value).toUpperCase()
+    };
+  });
+}
+
+document.getElementById('c_btnAdd').addEventListener('click', function(){ c_addRow(); });
+document.getElementById('c_btnEfectivo').addEventListener('click', function(){ c_setPago('EFECTIVO'); });
+document.getElementById('c_btnTerminal').addEventListener('click', function(){ c_setPago('TERMINAL'); });
+
+function c_setPago(t){
+  c_pago = t;
+  document.getElementById('c_btnEfectivo').classList.toggle('active', t === 'EFECTIVO');
+  document.getElementById('c_btnTerminal').classList.toggle('active', t === 'TERMINAL');
+  var rec = document.getElementById('c_campoRecibido');
+  var cam = document.getElementById('c_campoCambio');
+  if(rec) rec.style.display = t === 'EFECTIVO' ? '' : 'none';
+  if(cam) cam.style.display = t === 'EFECTIVO' ? '' : 'none';
+  c_refresh();
+}
+
+document.querySelectorAll('#casinoMode input').forEach(function(el){ upInput(el, c_refresh); });
+
+function c_buildLines(){
+  var W = W_CASINO;
+  var rows = c_getRows();
+  var L = [];
+  var fecha = fmtDate(gvRaw('c_fecha'));
+  var hora = fmtTime(gvRaw('c_hora'));
+
+  L.push({t: 'sep'});
+  L.push({t: 'c', txt: gv('c_nombre'), bold: true});
+  if(gv('c_direccion')){
+    wrapText(gv('c_direccion'), W).forEach(function(ln){ L.push({t: 'c', txt: ln}); });
+  }
+  L.push({t: 'sep'});
+  L.push({t: 'c', txt: '!GRACIAS POR SU VISITA!', bold: true});
+  L.push({t: 'sep'});
+  L.push({t: 'l', txt: 'ORDEN DE MESA'});
+  L.push({t: 'l', txt: 'FOLIO: ' + gv('c_folio')});
+  L.push({t: 'l', txt: 'FECHA: ' + fecha});
+  L.push({t: 'l', txt: 'HORA:  ' + hora});
+  L.push({t: 'l', txt: 'MESA:  ' + gv('c_mesa')});
+  L.push({t: 'l', txt: 'PERSONAS: ' + gv('c_personas')});
+  L.push({t: 'l', txt: 'ORDEN: ' + gv('c_orden')});
+  L.push({t: 'l', txt: 'MESERO: ' + gv('c_mesero')});
+  L.push({t: 'sep'});
+  L.push({t: 'l', txt: 'CANT DESCRIPCION    IMPORTE', bold: true});
+  L.push({t: 'sep'});
+  
+  rows.forEach(function(r){
+    var cant = pad(r.c, 4, true);
+    var desc = pad(r.d.slice(0, 16), 16, true);
+    var imp = pad(r.p, 12, false);
+    L.push({t: 'l', txt: cant + desc + imp});
+  });
+  
+  L.push({t: 'sep'});
+  L.push({t: 'l', txt: 'TOTAL ARTICULOS: ' + gv('c_totalArts')});
+  L.push({t: 'sep'});
+  L.push({t: 'l', txt: padLR('SUBTOTAL:', gv('c_subtotal'), W)});
+  L.push({t: 'l', txt: padLR('IVA (16%):', gv('c_iva'), W)});
+  L.push({t: 'l', txt: padLR('PROPINA:', gv('c_propina'), W)});
+  L.push({t: 'l', txt: padLR('TOTAL:', gv('c_total'), W), bold: true});
+  L.push({t: 'sep'});
+  L.push({t: 'l', txt: 'FORMA DE PAGO: ' + c_pago});
+  if(c_pago === 'EFECTIVO'){
+    L.push({t: 'l', txt: padLR('RECIBIDO:', gv('c_recibido'), W)});
+    L.push({t: 'l', txt: padLR('CAMBIO:', gv('c_cambio'), W)});
+  }
+  L.push({t: 'sep'});
+  L.push({t: 'c', txt: 'GRACIAS POR SU VISITA!', bold: true});
+  L.push({t: 'c', txt: 'LOS ESPERAMOS PRONTO'});
+  L.push({t: 'sep'});
+  L.push({t: 'l', txt: 'TERMINAL: ' + gv('c_terminal')});
+  L.push({t: 'sep'});
+  L.push({t: 'c', txt: 'FACTURA SOLICITALA AL', bold: true});
+  L.push({t: 'c', txt: 'MOMENTO DEL PAGO!', bold: true});
+  L.push({t: 'sep'});
+  
+  return L;
+}
+
+function c_refresh(){
+  document.getElementById('c_ticketPreview').innerHTML = renderHTML(c_buildLines(), W_CASINO, SEP32);
+}
+
+document.getElementById('c_btnDl').addEventListener('click', function(){
+  var py = "# -*- coding: utf-8 -*-\nfrom escpos.printer import Usb\n\nSEP = '" + SEP32 + "'\np = Usb(0x0416, 0x5011, profile='TM-T88II')\n\n";
+  var lines = c_buildLines();
+  for(var i = 0; i < lines.length; i++){
+    var ln = lines[i];
+    if(ln.t === 'sep'){
+      py += "p.set(align='left', bold=False)\np.text(SEP + '\\n')\n";
+    } else {
+      var al = ln.t === 'c' ? 'center' : 'left';
+      var bd = ln.bold ? 'True' : 'False';
+      py += "p.set(align='" + al + "', bold=" + bd + ")\np.text(" + JSON.stringify(normalize(ln.txt || '') + '\n') + ")\n";
+    }
+  }
+  py += "p.ln(3)\np.cut()\n";
+  var blob = new Blob([py], {type: 'text/plain'});
+  var a = mk('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ticket_restaurante.py';
+  a.click();
+});
+
+document.getElementById('c_btnPrint').addEventListener('click', function(){
+  fetch('http://localhost:8765/imprimir', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({lines: c_buildLines()})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){ if(d.ok) alert('Ticket impreso'); else alert('Error: ' + d.error); })
+  .catch(function(){ alert('Error: verifica que la app esté corriendo'); });
+});
+
+// MODO SUPERMERCADO
+var s_pago = 'EFECTIVO';
+var s_logoDataUrl = LOGOS['soriana'];
+document.getElementById('s_fecha').value = now.toISOString().split('T')[0];
+document.getElementById('s_hora').value = now.toTimeString().slice(0,5);
+
+document.querySelectorAll('.chain-btn').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('.chain-btn').forEach(function(b){ b.classList.remove('active'); });
+    this.classList.add('active');
+    var key = this.dataset.key;
+    if(key && LOGOS[key]){
+      s_logoDataUrl = LOGOS[key];
+      document.getElementById('s_logoPreviewThumb').src = s_logoDataUrl;
+      s_refresh();
+    }
+  });
+});
+
+function s_addRow(c, d, u, t){
+  c = c || '1';
+  d = normalize(d || '').toUpperCase();
+  u = u || '0.00';
+  t = t || '0.00';
+  var list = document.getElementById('s_productosList');
+  var row = mk('div');
+  row.className = 'super-row';
+  var i0 = mk(); i0.value = c; i0.placeholder = '1';
+  var i1 = mk(); i1.value = d; i1.placeholder = 'ARTICULO';
+  var i2 = mk(); i2.value = u; i2.placeholder = '0.00';
+  var i3 = mk(); i3.value = t; i3.placeholder = '0.00';
+  var btn = mk('button'); btn.className = 'btn-remove'; btn.innerHTML = '&times;';
+  btn.addEventListener('click', function(){ row.remove(); s_refresh(); });
+  [i0, i1, i2, i3].forEach(function(el){ upInput(el, s_refresh); });
+  [i0, i1, i2, i3, btn].forEach(function(el){ row.appendChild(el); });
+  list.appendChild(row);
+  s_refresh();
+}
+
+function s_getRows(){
+  return Array.from(document.querySelectorAll('#s_productosList .super-row')).map(function(r){
+    var ii = r.querySelectorAll('input');
+    return {
+      c: normalize(ii[0].value).toUpperCase(),
+      d: normalize(ii[1].value).toUpperCase(),
+      u: ii[2].value,
+      t: ii[3].value
+    };
+  });
+}
+
+document.getElementById('s_btnAdd').addEventListener('click', function(){ s_addRow(); });
+document.getElementById('s_btnEfectivo').addEventListener('click', function(){ s_setPago('EFECTIVO'); });
+document.getElementById('s_btnTarjeta').addEventListener('click', function(){ s_setPago('TARJETA'); });
+
+function s_setPago(t){
+  s_pago = t;
+  document.getElementById('s_btnEfectivo').classList.toggle('active', t === 'EFECTIVO');
+  document.getElementById('s_btnTarjeta').classList.toggle('active', t === 'TARJETA');
+  s_refresh();
+}
+
+document.querySelectorAll('#superMode input').forEach(function(el){ upInput(el, s_refresh); });
+
+function s_buildLines(){
+  var W = W_SUPER;
+  var rows = s_getRows();
+  var L = [];
+  var fecha = fmtDate(gvRaw('s_fecha'));
+  var hora = fmtTime(gvRaw('s_hora'));
+
+  L.push({t: 'c', txt: gv('s_nombre'), bold: true});
+  wrapText(gv('s_razon'), W).forEach(function(ln){ L.push({t: 'c', txt: ln}); });
+  wrapText(gv('s_regimen'), W).forEach(function(ln){ L.push({t: 'c', txt: ln}); });
+  wrapText(gv('s_direccion'), W).forEach(function(ln){ L.push({t: 'c', txt: ln}); });
+  wrapText(gv('s_colonia'), W).forEach(function(ln){ L.push({t: 'c', txt: ln}); });
+  L.push({t: 'c', txt: 'TEL: ' + gv('s_tel')});
+  L.push({t: 'c', txt: fecha + '  ' + hora});
+  L.push({t: 'sep'});
+  L.push({t: 'l', txt: 'CANT DESCRIPCION    IMPORTE', bold: true});
+  L.push({t: 'sep'});
+  
+  rows.forEach(function(r){
+    var cant = pad(r.c, 4, true);
+    var desc = pad(r.d.slice(0, 16), 16, true);
+    var imp = pad('$' + r.t, 12, false);
+    L.push({t: 'l', txt: cant + desc + imp});
+  });
+  
+  L.push({t: 'sep'});
+  L.push({t: 'l', txt: padLR('TOTAL:', gv('s_total'), W), bold: true});
+  L.push({t: 'l', txt: padLR(s_pago, gv('s_total'), W)});
+  L.push({t: 'sep'});
+  L.push({t: 'c', txt: 'ARTICULOS: ' + gv('s_totalArts')});
+  L.push({t: 'sep'});
+  
+  if(gv('s_ahorro')) L.push({t: 'c', txt: 'HOY TE AHORRASTE: ' + gv('s_ahorro'), bold: true});
+  if(gv('s_puntos')) L.push({t: 'l', txt: 'Puntos acumulados: ' + gv('s_puntos')});
+  L.push({t: 'sep'});
+  
+  var pie = gv('s_mensajePie');
+  if(pie) wrapText(pie, W).forEach(function(ln){ L.push({t: 'c', txt: ln}); });
+  if(gv('s_web')) wrapText(gv('s_web'), W).forEach(function(ln){ L.push({t: 'c', txt: ln}); });
+  if(gv('s_atiendio')){
+    L.push({t: 'l', txt: 'Le Atendio:'});
+    wrapText(gv('s_atiendio'), W).forEach(function(ln){ L.push({t: 'l', txt: '  ' + ln}); });
+  }
+  L.push({t: 'sep'});
+  if(gv('s_slogan')) wrapText(gv('s_slogan'), W).forEach(function(ln){ L.push({t: 'c', txt: ln, bold: true}); });
+  if(gv('s_version')) L.push({t: 'c', txt: gv('s_version')});
+  L.push({t: 'sep'});
+  if(gv('s_barcode')){
+    L.push({t: 'c', txt: '||||| ' + gv('s_barcode') + ' |||||'});
+    L.push({t: 'c', txt: gv('s_barcode')});
+  }
+  
+  return L;
+}
+
+function s_refresh(){
+  document.getElementById('s_ticketPreview').innerHTML = renderHTML(s_buildLines(), W_SUPER, SEP42);
+}
+
+document.getElementById('s_btnDl').addEventListener('click', function(){
+  // detectar cadena activa para el logo
+  var activeChain = document.querySelector('.chain-btn.active');
+  var chainKey = activeChain ? activeChain.dataset.key : 'soriana';
+  var logoFile = 'logo' + chainKey.charAt(0).toUpperCase() + chainKey.slice(1) + '.png';
+
+  var py = "# -*- coding: utf-8 -*-\n";
+  py += "from escpos.printer import Usb\n";
+  py += "from PIL import Image\n\n";
+  py += "SEP = '" + SEP42 + "'\n";
+  py += "p = Usb(0x0416, 0x5011, profile='TM-T88II')\n\n";
+  py += "# --- LOGO ---\n";
+  py += "p.set(align='center', bold=False)\n";
+  py += "logo = Image.open('" + logoFile + "').convert('RGB')\n";
+  py += "MAX_W = 384\n";
+  py += "if logo.width > MAX_W:\n    ratio = MAX_W / logo.width\n    logo = logo.resize((MAX_W, int(logo.height * ratio)), Image.LANCZOS)\n";
+  py += "p.image(logo)\n\n";
+
+  var lines = s_buildLines();
+  for(var i = 0; i < lines.length; i++){
+    var ln = lines[i];
+    if(ln.t === 'sep'){
+      py += "p.set(align='left', bold=False)\np.text(SEP + '\\n')\n";
+    } else {
+      var al = ln.t === 'c' ? 'center' : 'left';
+      var bd = ln.bold ? 'True' : 'False';
+      py += "p.set(align='" + al + "', bold=" + bd + ")\n";
+      py += "p.text(" + JSON.stringify(normalize(ln.txt || '') + '\n') + ")\n";
+    }
+  }
+  py += "p.ln(3)\np.cut()\n";
+  var blob = new Blob([py], {type: 'text/plain'});
+  var a = mk('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ticket_supermercado.py';
+  a.click();
+});
+
+document.getElementById('s_btnPrint').addEventListener('click', function(){
+  fetch('http://localhost:8765/imprimir', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({lines: s_buildLines()})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){ if(d.ok) alert('Ticket impreso'); else alert('Error: ' + d.error); })
+  .catch(function(){ alert('Error: verifica que la app esté corriendo'); });
+});
+
+// MODO TIENDA
+document.getElementById('t_fecha').value = now.toISOString().split('T')[0];
+document.getElementById('t_hora').value = now.toTimeString().slice(0,5);
+
+function t_addRow(c, d, p){
+  c = c || '1';
+  d = normalize(d || '').toUpperCase();
+  p = p || '';
+  var list = document.getElementById('t_productosList');
+  var row = mk('div');
+  row.className = 'producto-row';
+  var i0 = mk(); i0.value = c; i0.placeholder = '1';
+  var i1 = mk(); i1.value = d; i1.placeholder = 'DESCRIPCION';
+  var i2 = mk(); i2.value = p; i2.placeholder = '$0.00';
+  var btn = mk('button'); btn.className = 'btn-remove'; btn.innerHTML = '&times;';
+  btn.addEventListener('click', function(){ row.remove(); t_refresh(); });
+  [i0, i1, i2].forEach(function(el){ upInput(el, t_refresh); });
+  [i0, i1, i2, btn].forEach(function(el){ row.appendChild(el); });
+  list.appendChild(row);
+  t_refresh();
+}
+
+function t_getRows(){
+  return Array.from(document.querySelectorAll('#t_productosList .producto-row')).map(function(r){
+    var ii = r.querySelectorAll('input');
+    return {
+      c: normalize(ii[0].value).toUpperCase(),
+      d: normalize(ii[1].value).toUpperCase(),
+      p: normalize(ii[2].value).toUpperCase()
+    };
+  });
+}
+
+document.getElementById('t_btnAdd').addEventListener('click', function(){ t_addRow(); });
+
+document.querySelectorAll('#tiendaMode input').forEach(function(el){ upInput(el, t_refresh); });
+
+function t_buildLines(){
+  var W = W_TIENDA;
+  var rows = t_getRows();
+  var L = [];
+  var fecha = fmtDate(gvRaw('t_fecha'));
+  var hora = fmtTime(gvRaw('t_hora'));
+
+  L.push({t: 'c', txt: gv('t_propietario'), bold: true});
+  if(gv('t_nombre')){
+    wrapText(gv('t_nombre'), W).forEach(function(ln){ L.push({t: 'c', txt: ln}); });
+  }
+  if(gv('t_direccion1')){
+    wrapText(gv('t_direccion1'), W).forEach(function(ln){ L.push({t: 'c', txt: ln}); });
+  }
+  if(gv('t_direccion2')){
+    wrapText(gv('t_direccion2'), W).forEach(function(ln){ L.push({t: 'c', txt: ln}); });
+  }
+  if(gv('t_ubicacion_rfc')){
+    wrapText(gv('t_ubicacion_rfc'), W).forEach(function(ln){ L.push({t: 'c', txt: ln}); });
+  }
+  L.push({t: 'l', txt: ''});
+  L.push({t: 'c', txt: fecha + ' ' + hora});
+  L.push({t: 'l', txt: ''});
+  
+  L.push({t: 'l', txt: padLR('CAJERO:', gv('t_cajero'), W)});
+  L.push({t: 'l', txt: padLR('TURNO #', gv('t_turno'), W)});
+  L.push({t: 'l', txt: padLR('FOLIO:', gv('t_folio'), W)});
+  L.push({t: 'l', txt: ''});
+  
+  L.push({t: 'l', txt: 'CANT DESCRIPCION    IMPORTE', bold: true});
+  L.push({t: 'sep'});
+  
+  rows.forEach(function(r){
+    var cant = pad(r.c, 4, true);
+    var desc = pad(r.d.slice(0, 16), 16, true);
+    var imp = pad(r.p, 12, false);
+    L.push({t: 'l', txt: cant + desc + imp});
+  });
+  
+  L.push({t: 'sep'});
+  L.push({t: 'l', txt: 'NO. DE ARTICULOS: ' + gv('t_totalArts')});
+  
+  L.push({t: 'l', txt: padLR('TOTAL:', gv('t_total'), W)});
+  L.push({t: 'l', txt: padLR('PAGO CON:', gv('t_recibido'), W)});
+  L.push({t: 'l', txt: padLR('SU CAMBIO:', gv('t_cambio'), W)});
+  L.push({t: 'l', txt: ''});
+  
+  if(gv('t_regimen')) L.push({t: 'c', txt: gv('t_regimen')});
+  if(gv('t_web')) L.push({t: 'c', txt: gv('t_web')});
+  
+  return L;
+}
+
+function t_refresh(){
+  document.getElementById('t_ticketPreview').innerHTML = renderHTML(t_buildLines(), W_TIENDA, SEP_TIENDA);
+}
+
+document.getElementById('t_btnDl').addEventListener('click', function(){
+  var py = "# -*- coding: utf-8 -*-\nfrom escpos.printer import Usb\n\nSEP = '" + SEP_TIENDA + "'\np = Usb(0x0416, 0x5011, profile='TM-T88II')\n\n";
+
+  var lines = t_buildLines();
+  for(var i = 0; i < lines.length; i++){
+    var ln = lines[i];
+    if(ln.t === 'sep'){
+      py += "p.set(align='left', bold=False)\np.text(SEP + '\\n')\n";
+    } else {
+      var al = ln.t === 'c' ? 'center' : 'left';
+      var bd = ln.bold ? 'True' : 'False';
+      py += "p.set(align='" + al + "', bold=" + bd + ")\np.text(" + JSON.stringify(normalize(ln.txt || '') + '\n') + ")\n";
+    }
+  }
+  py += "p.ln(3)\np.cut()\n";
+  var blob = new Blob([py], {type: 'text/plain'});
+  var a = mk('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ticket_tienda.py';
+  a.click();
+});
+
+document.getElementById('t_btnPrint').addEventListener('click', function(){
+  fetch('http://localhost:8765/imprimir', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({lines: t_buildLines()})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){ if(d.ok) alert('Ticket impreso'); else alert('Error: ' + d.error); })
+  .catch(function(){ alert('Error: verifica que la app esté corriendo'); });
+});
+
+// INICIALIZACIÓN
+window.addEventListener('load', function(){
+  var c_data = [
+    {c:'4', d:'ORDEN DE BISTE', p:'$80.00'},
+    {c:'3', d:'TACOS CAMPECHA', p:'$36.00'},
+    {c:'2', d:'AGUA SABOR', p:'$35.00'},
+    {c:'2', d:'TACOS SUADERO', p:'$24.00'},
+    {c:'2', d:'TACOS PASTOR', p:'$24.00'},
+    {c:'2', d:'GELATINAS', p:'$40.00'}
+  ];
+  c_data.forEach(function(r){ c_addRow(r.c, r.d, r.p); });
+  
+  var s_data = [
+    {c:'15', d:'AGUA NATURAL BONAFO', u:'8.30', t:'124.50'},
+    {c:'1', d:'DORITOS NACHOS', u:'59.90', t:'59.90'},
+    {c:'1', d:'PAKETAXO QUEXO', u:'90.90', t:'90.90'},
+    {c:'1', d:'RANCHERITOS', u:'62.90', t:'62.90'},
+    {c:'3', d:'COCA COLA', u:'160.00', t:'480.00'},
+    {c:'2', d:'DELAWARE', u:'21.00', t:'42.00'},
+    {c:'1', d:'FANTA NARANJA', u:'21.00', t:'21.00'},
+    {c:'2', d:'SIDRAL', u:'21.00', t:'42.00'},
+    {c:'1', d:'SPRITE', u:'21.00', t:'21.00'}
+  ];
+  s_data.forEach(function(r){ s_addRow(r.c, r.d, r.u, r.t); });
+  
+  document.getElementById('s_logoPreviewThumb').src = LOGOS['soriana'];
+  
+  var t_data = [
+    {c:'1', d:'BOTANAS Y SEMILLAS', p:'$14.00'},
+    {c:'1', d:'CHURRITO CHILEYLIMON', p:'$18.00'},
+    {c:'1', d:'SABRITAS ADOBADAS CHIC', p:'$20.00'}
+  ];
+  t_data.forEach(function(r){ t_addRow(r.c, r.d, r.p); });
+  
+  c_refresh();
+  s_refresh();
+  t_refresh();
+});
+})();
+</script>
+</body>
+</html>

@@ -6,6 +6,7 @@ from http.server import HTTPServer
 import os
 import shlex
 import shutil
+import sys
 import subprocess
 import tempfile
 
@@ -21,8 +22,8 @@ import usb.core
 
 def _libusb():
     import glob, os, sys
-    res = os.environ.get('RESOURCEPATH', '')
-    for pat in (res + '/../Frameworks/libusb*.dylib', '/opt/homebrew/lib/libusb-1.0.dylib', '/usr/local/lib/libusb-1.0.dylib'):
+    res = getattr(sys, '_MEIPASS', os.environ.get('RESOURCEPATH', ''))
+    for pat in (res + '/libusb*.dylib', res + '/../Frameworks/libusb*.dylib', '/opt/homebrew/lib/libusb-1.0.dylib', '/usr/local/lib/libusb-1.0.dylib'):
         m = glob.glob(pat)
         if m:
             return m[0]
@@ -59,7 +60,7 @@ class App(rumps.App):
             self.ui = UI.alloc().init()
             wv = WKWebView.alloc().initWithFrame_configuration_(NSMakeRect(0, 0, 1000, 800), WKWebViewConfiguration.alloc().init())
             wv.setUIDelegate_(self.ui)
-            html = os.path.join(os.environ.get('RESOURCEPATH', '..'), 'index.html')
+            html = os.path.join(getattr(sys, '_MEIPASS', os.environ.get('RESOURCEPATH', '..')), 'index.html')
             u = NSURL.fileURLWithPath_(html)
             wv.loadFileURL_allowingReadAccessToURL_(u, u.URLByDeletingLastPathComponent())
             self.win = NSWindow.alloc().initWithContentRect_styleMask_backing_defer_(NSMakeRect(0, 0, 1000, 800), 15, NSBackingStoreBuffered, False)

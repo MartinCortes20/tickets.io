@@ -36,7 +36,8 @@ class H(BaseHTTPRequestHandler):
                     p.text(SEP + '\n')
                 else:
                     p.set(align='center' if t == 'c' else 'left', bold=bool(ln.get('bold')))
-                    p.text(str(ln.get('txt', ''))[:32] + '\n')
+                    text = str(ln.get('txt', '')).replace('\\n', '').replace('\n', '').strip()
+                    p.text(text[:32] + '\n')
             p.ln(3)
             p.cut()
             self._send(200, {'ok': True})
