@@ -4,10 +4,12 @@ import threading
 from http.server import HTTPServer
 
 import os
+import shlex
+import subprocess
 
 import objc
 import rumps
-from AppKit import NSAlert, NSApp, NSBackingStoreBuffered, NSMakeRect, NSWindow
+from AppKit import NSAlert, NSOpenPanel, NSApp, NSBackingStoreBuffered, NSMakeRect, NSWindow
 from Foundation import NSObject, NSURL
 from WebKit import WKWebView, WKWebViewConfiguration
 import usb.backend.libusb1
@@ -46,7 +48,7 @@ class App(rumps.App):
         self.estado = rumps.MenuItem('')
         self.iniciar = rumps.MenuItem('Iniciar', callback=self.on_iniciar)
         self.detener = rumps.MenuItem('Detener', callback=self.on_detener)
-        self.menu = [rumps.MenuItem('Abrir tickets', callback=self.on_abrir), None, self.estado, None, self.iniciar, self.detener]
+        self.menu = [rumps.MenuItem('Abrir tickets', callback=self.on_abrir), rumps.MenuItem('Imprimir archivo .py', callback=self.on_archivo), None, self.estado, None, self.iniciar, self.detener]
         self.win = None
         self.on_iniciar(None)
 
@@ -65,6 +67,22 @@ class App(rumps.App):
             self.win.center()
         self.win.makeKeyAndOrderFront_(None)
         NSApp.activateIgnoringOtherApps_(True)
+
+    def on_archivo(self, _):
+        NSApp.activateIgnoringOtherApps_(True)
+        panel = NSOpenPanel.openPanel()
+        panel.setAllowedFileTypes_(['py'])
+        if not panel.runModal():
+            return
+        path = panel.URL().path()
+        # Equivale a `sudo python3 archivo.py`; osascript pide la contraseña en una ventana.
+        cmd = 'PATH=/opt/homebrew/bin:/usr/local/bin:$PATH sudo python3 ' + shlex.quote(path)
+        script = 'do shell script "%s" with administrator privileges' % cmd.replace('\\', '\\\\').replace('"', '\\"')
+        r = subprocess.run(['osascript', '-e', script], capture_output=True, text=True)
+        if r.returncode:
+            rumps.alert('Error al imprimir', r.stderr.strip()[-500:])
+        else:
+            rumps.notification('ImprimiTicket', '', 'Ticket enviado')
 
     def refrescar(self):
         on = self.httpd is not None
